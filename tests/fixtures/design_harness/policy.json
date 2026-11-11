@@ -1,0 +1,16 @@
+{
+  "id": "static-mobile-v1",
+  "frozen_at": "2026-11-10",
+  "coordinate_unit": "design_px",
+  "max_automatic_revisions": 2,
+  "minimum_action_size": 44,
+  "minimum_text_contrast": 4.5,
+  "maximum_unintentional_clipping": 0,
+  "maximum_unintentional_sibling_overlaps": 0,
+  "minimum_reference_count_per_direction": 1,
+  "basis": {
+    "contrast": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+    "action_size": "https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced",
+    "note": "Project static-design profile: applies 4.5 to all visible text and 44 to mapped primary actions. Not a WCAG conformance certificate or actual device touch measurement."
+  }
+}
