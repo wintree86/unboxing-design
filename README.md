@@ -47,6 +47,8 @@ python3 design.py --project-root /absolute/company-project status --run first-st
 
 `init`은 빈 초안입니다. manifest·시안·관찰 근거를 작성한 뒤 `refresh`, `prepare --stage comparison`, `serve`로 이어갑니다. [명령](skills/design-harness/references/commands.md), [입력·도구](skills/design-harness/references/environment.md), [실행 계약](skills/design-harness/references/contract.md)을 참고하세요.
 
+디자인 시안·목업은 대표 범위에서 실제 콘텐츠·필요 이미지·표면·조작 디테일이 반영된 모습을 뜻합니다. 구조안과 구분하며 새 시각 방향은 실제 앱과 Pinterest의 핀 상세·연결 작품을 함께 관찰합니다. 자세한 기준은 [완성 목업](skills/design-bot/references/finished-mockup.md)에 있습니다.
+
 수치 통과가 미적 완성도나 사용자 만족을 뜻하지 않습니다. 실제 방향 선택 전에는 나머지 화면으로 확장하지 않습니다. 최종 인계에는 실제 독립 검토와 같은 버전의 사용자 결정이 필요합니다. 이 실행기는 시각 비평의 의미나 결정 출처의 진위를 인증하지 않습니다.
 
 ## 업데이트와 제거

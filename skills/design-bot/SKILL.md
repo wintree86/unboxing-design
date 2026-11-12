@@ -10,11 +10,11 @@ description: >
 
 [환경과 입력 연결](../design-harness/references/environment.md)을 읽고 프로젝트 경로와 도구를 확인한다. 사용자 말과 제품 맥락을 실제 화면의 빛·질감·서체·구성으로 해석한다. 참고한 작품을 나열하거나 스킬의 스타일 목록만 적용한 결과로 끝내지 않는다.
 
-1. [제작 절차](references/procedures.md)를 읽는다. 기획에서 시작하거나 `Reference Discovery Before Wireframes` 단계면 [선행 탐색 계약](references/discovery.md)을 먼저 수행한다. 와이어프레임이 없어도 시작하며, 필수 요구사항과 임시 배치를 구분해 구성 가설을 넘긴다.
+1. [제작 절차](references/procedures.md)를 읽는다. 디자인 시안·목업은 [완성 목업 기준](references/finished-mockup.md)을 함께 읽고, 구조안과 구분해 실제 콘텐츠·이미지·표면·디테일이 반영된 대표 화면을 만든다. 기획에서 시작하거나 `Reference Discovery Before Wireframes` 단계면 [선행 탐색 계약](references/discovery.md)을 먼저 수행한다. 와이어프레임이 없어도 시작하며, 필수 요구사항과 임시 배치를 구분해 구성 가설을 넘긴다.
 2. 앱 과업에 맞는 실제 UI 화면과 흐름을 먼저 관찰하고, 분위기·소재 레퍼런스를 별도로 수집한다. 사진·포스터만으로 앱 UX 탐색을 대체하지 않는다. 검색 요약만 읽은 자료를 관찰 근거로 기록하지 않는다.
 3. 요구사항의 불변 조건과 기존 배치의 가정을 구분한다. 같은 콘텐츠·행동 결과·상태·뷰포트는 비교 조건이며 좌표·컴포넌트를 고정하지 않는다. 새 시각 방향 또는 품질 거절 후에는 [대표 화면 제작](references/representative-study.md)을 따른다. 대표 레퍼런스의 구성을 표시하고 편집 가능한 연구본으로 재현한 뒤 우리 콘텐츠로 번역한다.
 4. 대표 화면 하나에 서로 독립적인 두 방향을 먼저 만든다. 사용자 지정 범위가 있으면 그것을 우선한다. 공통 화면 템플릿으로 후보를 찍어내거나 화면 수로 완성도를 대신하지 않는다. 대표 화면 검토 전에는 나머지 화면 제작과 공통 컴포넌트 추출을 시작하지 않는다.
-5. 레퍼런스·이전 화면·새 화면을 같은 비교 보드에서 보여주고 [시각 검토](../design-harness/references/visual-review.md)를 수행한다. 저장·재열기·실측은 [실행 계약](../design-harness/references/contract.md)을 따른다. 수치 통과와 시각적 설득력을 별도로 보고한다.
+5. 요청한 완성도와 후보 간 시각 차이를 먼저 대조한다. 레퍼런스의 주요 이미지·표면 표현이 빠졌거나 구조만 다른 같은 스타일이면 대표 화면을 보완한다. 레퍼런스·이전 화면·새 화면을 같은 비교 보드에서 보여주고 [시각 검토](../design-harness/references/visual-review.md)를 수행한다. 저장·재열기·실측은 [실행 계약](../design-harness/references/contract.md)을 따른다. 수치 통과와 시각적 설득력을 별도로 보고한다.
 6. 사용자 방향 선택을 받은 뒤 선택 이유를 토큰·컴포넌트로 정리하고 확장한다. 무응답을 선택으로 처리하지 않는다. 방향 선택과 최종 확정은 별개다. 작은 수정은 유효한 기존 연구·선택을 재사용하고 변경 부위만 검토한다.
 
 선행 탐색 문서는 `docs/design-discovery/`, 시각 제작 문서는 `docs/design-harness/{run-id}/`, 디자인/이미지는 `designs/ui/{run-id}/`와 `designs/exports/design-harness/{run-id}/`다. 기본은 현재 프로젝트의 docs와 designs이며 design-kit.json으로 문서/코드 루트를 지정할 수 있다. `.pen`은 전용 도구로만 읽고 쓴다. 외부 자료는 실제로 관찰하고 출처를 기록하며 제품용 자산과 구분한다.
