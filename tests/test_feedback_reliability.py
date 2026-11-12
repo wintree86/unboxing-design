@@ -180,3 +180,14 @@ def test_non_ui_handoff_respects_explicit_hold(tmp_path):
     run=DesignRun(ctx,'test');run.initialize(m);run.refresh('Backend scope');assert run.prepare()['ok']
     feedback(run,candidate_id=None,version=None,classification='diagnosis_only')
     assert not run.gate()['ok'] and not run.prepare()['ok']
+
+
+def test_revision_budget_also_blocks_production_permission(tmp_path):
+    ctx,m=build(tmp_path);run=start(ctx,m);run.submit(event(run))
+    for reason in ('First correction','Second correction','Third exceeds budget'):
+        run.refresh(reason,automatic=True)
+    status=run.status()
+    assert status['phase']=='blocked' and not status['production_allowed']
+    assert status['production_allowed_by_candidate']=={'a':False,'b':False}
+    assert not status['expansion_allowed'] and status['eligible_candidate_ids']==[]
+    assert status['selected']['candidate_id']=='a'

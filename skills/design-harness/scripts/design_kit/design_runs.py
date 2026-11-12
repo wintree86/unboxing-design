@@ -129,12 +129,13 @@ class DesignRun:
         for candidate in manifest.get('candidates', []):
             cid = candidate['id']
             issues = feedback_errors(self.ctx, feedback, cid, state['snapshot'], active_holds)
+            if state['phase'] == 'blocked': issues.append('Automatic revision budget exhausted')
             if legacy: issues.append('Legacy run: explicit upgrade and current visual evidence required')
             issues.extend(presentation)
             try: visual_review(self.ctx, self.directory, manifest, state, feedback, cid)
             except (DesignError, OSError, KeyError, TypeError, ValueError) as exc: issues.append(str(exc))
             errors[cid] = issues
-        production = {c['id']: not any(scope in (None, c['id']) for scope in active_holds.values())
+        production = {c['id']: state['phase'] != 'blocked' and not any(scope in (None, c['id']) for scope in active_holds.values())
                       for c in manifest.get('candidates', [])}
         usable = selection_usable(state, manifest, feedback, active_holds)
         selected = state.get('selected')
@@ -142,7 +143,7 @@ class DesignRun:
             usable = False
         return {'feedback': feedback, 'active_holds': active_holds,
                 'work_mode': 'diagnosis_only' if active_holds else 'design',
-                'analysis_allowed': True, 'production_allowed': all(production.values()) and not any(v is None for v in active_holds.values()),
+                'analysis_allowed': True, 'production_allowed': state['phase'] != 'blocked' and all(production.values()) and not any(v is None for v in active_holds.values()),
                 'production_allowed_by_candidate': production, 'selection_usable': usable,
                 'expansion_allowed': usable and not errors.get(selected['candidate_id']) if selected else False,
                 'eligible_candidate_ids': [cid for cid, issues in errors.items() if not issues],
@@ -174,7 +175,7 @@ class DesignRun:
             actual = fingerprint(manifest, self.ctx)
             readiness = self._readiness(state, manifest)
             phase = state['phase']
-            if not readiness['production_allowed'] and not any(readiness['production_allowed_by_candidate'].values()): phase = 'diagnosis_only'
+            if readiness['active_holds'] and not readiness['production_allowed'] and not any(readiness['production_allowed_by_candidate'].values()): phase = 'diagnosis_only'
             elif state.get('selected') and not readiness['selection_usable']: phase = 'feedback_pending'
             elif phase == 'awaiting_direction' and not readiness['eligible_candidate_ids']: phase = 'feedback_pending'
             elif phase in ('awaiting_final', 'ready_for_build') and state.get('selected') and readiness['readiness_errors'].get(state['selected']['candidate_id']):
