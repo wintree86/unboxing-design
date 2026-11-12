@@ -4,6 +4,7 @@
 
 - `design-bot`: 레퍼런스 탐색·구성 연구·대표 시안 제작.
 - `design-harness`: 시각 검토·비교·사용자 결정·재개·최종 인계.
+- `design-implementation`: 승인 시안의 코드 구현·동일 조건 실제 화면 비교·변경/누락 검사.
 - 포함된 Python 실행기: 파일 지문, 정적 측정, 로컬 비교 보드, 결정 기록.
 
 Python 3.11+, macOS/Linux가 필요합니다. 실행·설치에는 외부 Python 패키지, 모델 SDK, 허브 등록부가 필요 없습니다. Windows 네이티브는 POSIX 파일 잠금 때문에 지원하지 않습니다. 디자인 제작에는 호스트 에이전트의 웹/이미지 관찰과 디자인 편집 도구가 별도로 필요합니다. 최초 연결 경로는 Pencil이며 설치기가 MCP나 계정 설정을 변경하지 않습니다.
@@ -23,7 +24,7 @@ python3 install.py --target claude --project /absolute/company-project
 python3 /absolute/company-project/.agents/skills/design-harness/scripts/design.py --project-root /absolute/company-project doctor
 ```
 
-Codex에는 `.agents/skills/`, Claude Code에는 `.claude/skills/`로 두 스킬과 실행기를 **복사**합니다. 두 폴더 사이 상대 참조를 유지하며 원본 checkout을 이동·삭제해도 실행됩니다. 설치 후 다음 대화에서 스킬을 사용합니다. 기존 스킬 인식이 갱신되지 않으면 새 세션을 시작합니다.
+Codex에는 `.agents/skills/`, Claude Code에는 `.claude/skills/`로 세 스킬과 실행기를 **복사**합니다. 설치된 스킬 폴더 사이 상대 참조를 유지하며 원본 checkout을 이동·삭제해도 실행됩니다. 설치 후 다음 대화에서 스킬을 사용합니다. 기존 스킬 인식이 갱신되지 않으면 새 세션을 시작합니다.
 
 사용자 공통 설치는 `--skills-dir`에 실제 에이전트의 스킬 디렉토리를 지정합니다. 회사별 입력과 버전 관리에는 프로젝트 설치를 권장합니다. 자체 에이전트는 `skills/*/SKILL.md`를 로드하고 `design.py`를 호출할 수 있습니다. 런타임이 디자인을 생성하거나 에이전트를 자동 호출하지는 않습니다.
 
@@ -62,7 +63,7 @@ python3 install.py --target codex --project /absolute/company-project --upgrade
 python3 install.py --target codex --project /absolute/company-project --remove
 ```
 
-설치 영수증의 해시와 일치하는 두 스킬만 변경합니다. 같은 이름의 기존 스킬, 심볼릭 링크, 설치 후 사용자가 수정한 파일은 덮어쓰거나 삭제하지 않습니다. 충돌하면 해당 파일을 직접 보존·정리한 뒤 다시 실행합니다. 다른 스킬과 프로젝트의 PRD·디자인·결정 기록은 유지합니다. 두 에이전트의 스킬 디렉토리에 모두 설치했다면 각각 업데이트합니다.
+설치 영수증의 해시와 일치하는 소유 스킬만 변경합니다. 같은 이름의 기존 스킬, 심볼릭 링크, 설치 후 사용자가 수정한 파일은 덮어쓰거나 삭제하지 않습니다. 충돌하면 해당 파일을 직접 보존·정리한 뒤 다시 실행합니다. 다른 스킬과 프로젝트의 PRD·디자인·결정 기록은 유지합니다. 두 에이전트의 스킬 디렉토리에 모두 설치했다면 각각 업데이트합니다.
 
 ## 검증과 배포 준비
 
@@ -84,3 +85,11 @@ python3 build_release.py --output /absolute/output-directory
 
 - v2 피드백 원장과 작업 모드를 따른다. 새 방향 탐색은 대표 두 안, 기존 선택 방향 수정은 한 안의 전후, 원인 조사 전용은 분석·문서로 분기한다. 미분류/거절/변경 요청은 해당 범위의 새 선택·확장·인계를 제한하며 원인 조사 중지는 실제 사용자 재개 지시로만 해제한다. 기존 결정은 역사로 보존한다.
 - 비교 검토는 실제 산출물과 피드백 원문/분류/적용 이벤트에 묶고 자기 검토/독립 검토를 구분한다. 제시본 역할·버전·원본·PNG를 등록한다. 자동 검사는 근거 연결을 검사하며 미관·피드백 의미를 판정하지 않는다. v1은 비파괴 조회하고 명시적 upgrade로 전환한다.
+
+## 승인 시안 구현
+
+`$design-implementation`으로 특정 버전의 화면을 구현하거나 현재 앱과의 불일치를 조사합니다. [스킬](skills/design-implementation/SKILL.md), [입력 계약](skills/design-implementation/references/contract.md), [실제 캡처](skills/design-implementation/references/capture.md)를 따릅니다. 기존 사용자 구현 지시를 재사용하며 새 승인을 일괄 요구하지 않습니다.
+
+대표 화면에서 구성·문구·주요 행동·스타일·자산·좌표를 실제 앱과 비교하고 범위를 확장합니다. 기능 테스트 성공으로 시각 비교를 대신하지 않습니다. `verify.py`는 누락, 조건 불일치, 코드/캡처 변경, 제출 측정의 차이, 미해결 시각 검토를 실패로 반환합니다. 실제 렌더링·미적 판단·독립 리뷰·사용자 승인 인증은 수행하지 않습니다. 에이전트가 검사를 호출하지 않는 모든 환경을 자동으로 차단하는 전역 훅은 아닙니다.
+
+0.2.x의 기존 두 스킬 설치는 로컬 수정이 없으면 0.3.x의 세 스킬로 업그레이드됩니다. 기존 실행 문서/선택을 변경하지 않으며 `design-implementation`이라는 다른 스킬이 있으면 충돌로 보존합니다.

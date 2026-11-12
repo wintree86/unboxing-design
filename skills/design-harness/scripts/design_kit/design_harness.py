@@ -71,11 +71,11 @@ def cli(argv=None):
         ctx = build_context(args.project_root, args.config)
         if args.command == "doctor":
             skills = Path(__file__).resolve().parents[3]
-            paths = [skills / name / "SKILL.md" for name in ("design-bot", "design-harness")]
+            paths = [skills / name / "SKILL.md" for name in ("design-bot", "design-harness", "design-implementation")]
             assets = Path(__file__).parent / "design_board_assets"
             output = {"ok": all(p.is_file() for p in paths) and all((assets / p).is_file() for p in ("board.js", "board.css")),
                       "version": __version__, "python": sys.version.split()[0],
-                      "skills_found": sum(p.is_file() for p in paths), "skills_expected": 2,
+                      "skills_found": sum(p.is_file() for p in paths), "skills_expected": 3,
                       "docs_root": str(ctx.docs_root), "code_root": str(ctx.code_root),
                       "external_tools": "unverified: connect a design editor and visual observation tools in the host agent"}
         elif args.command == "discovery-check":

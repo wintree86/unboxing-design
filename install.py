@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the two skills as a self-contained, versioned pair. No network access."""
+"""Install the skills as a self-contained, versioned package. No network access."""
 
 import argparse
 import hashlib
@@ -14,14 +14,14 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "skills/design-harness/scripts"))
 from design_kit import __version__
 
-NAMES = ("design-bot", "design-harness")
+NAMES = ("design-bot", "design-harness", "design-implementation")
 RECEIPT = ".design-kit-install.json"
 IGNORED = {"__pycache__", ".DS_Store", ".pytest_cache"}
 
 
-def inventory(base):
+def inventory(base, names=NAMES):
     result = {}
-    for name in NAMES:
+    for name in names:
         folder = base / name
         if folder.is_symlink() or not folder.is_dir():
             raise ValueError(f"Expected an ordinary skill directory: {folder}")
@@ -40,25 +40,36 @@ def transact(destination, *, upgrade=False, remove=False):
     if receipt_path.is_symlink():
         raise ValueError(f"Refusing symlink receipt: {receipt_path}")
     old = None
+    owned = ()
     if receipt_path.exists():
         old = json.loads(receipt_path.read_text(encoding="utf-8"))
         if not isinstance(old, dict) or old.get("package") != "design-kit" or old.get("schema_version") != 1:
             raise ValueError("Unrecognized installation receipt; existing files preserved")
-        if inventory(destination) != old.get("files"):
+        files = old.get("files")
+        if not isinstance(files, dict) or not files or not all(isinstance(k, str) for k in files):
+            raise ValueError("Invalid owned file inventory")
+        owned = tuple(sorted({name.split("/")[0] for name in files}))
+        if not set(owned) <= set(NAMES):
+            raise ValueError("Unknown owned skill; existing files preserved")
+        if inventory(destination, owned) != files:
             raise ValueError("Installed skills were modified; preserve your edits before upgrading/removing")
     elif any((destination / name).exists() or (destination / name).is_symlink() for name in NAMES):
         raise ValueError("A same-named skill already exists without an owned receipt; existing files preserved")
 
+    if old and not remove:
+        for name in set(NAMES) - set(owned):
+            if (destination / name).exists() or (destination / name).is_symlink():
+                raise ValueError(f"New skill collides with an unowned directory: {name}")
     if remove and old is None:
         raise ValueError("No owned Design Kit installation found")
     source_files = inventory(ROOT / "skills") if not remove else {}
     if old and not remove and source_files == old["files"]:
-        return {"ok": True, "action": "unchanged", "skills": 2, "files": len(source_files), "destination": str(destination)}
+        return {"ok": True, "action": "unchanged", "skills": len(NAMES), "files": len(source_files), "destination": str(destination)}
     if old and not remove and not upgrade:
         raise ValueError("An older package is installed; use --upgrade after reviewing the new version")
 
     receipt = {"schema_version": 1, "package": "design-kit", "version": __version__, "files": source_files}
-    # Stage both skills before changing either installed directory. Roll back ordinary I/O failures.
+    # Stage every skill before changing any installed directory. Roll back ordinary I/O failures.
     with tempfile.TemporaryDirectory(prefix=".design-kit-stage-", dir=destination) as temporary:
         stage = Path(temporary)
         if not remove:
@@ -71,7 +82,7 @@ def transact(destination, *, upgrade=False, remove=False):
         moved, written = [], []
         try:
             if old:
-                for name in (*NAMES, RECEIPT):
+                for name in (*owned, RECEIPT):
                     (destination / name).rename(stage / (name + ".previous"))
                     moved.append(name)
             if not remove:
@@ -85,7 +96,7 @@ def transact(destination, *, upgrade=False, remove=False):
                 (stage / (name + ".previous")).rename(destination / name)
             raise
     return {"ok": True, "action": "removed" if remove else "upgraded" if old else "installed",
-            "skills": 2, "files": len(old["files"] if remove else source_files), "destination": str(destination)}
+            "skills": len(owned) if remove else len(NAMES), "files": len(old["files"] if remove else source_files), "destination": str(destination)}
 
 
 def main(argv=None):

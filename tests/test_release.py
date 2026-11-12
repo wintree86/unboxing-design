@@ -24,4 +24,4 @@ def test_release_is_repeatable_complete_and_installable(tmp_path):
     skills = tmp_path / "installed"
     invoke(checkout / "install.py", "--skills-dir", skills, cwd=tmp_path)
     result = invoke(skills / "design-harness/scripts/design.py", "--project-root", tmp_path, "doctor", cwd=tmp_path)
-    assert result["ok"] and result["skills_found"] == 2
+    assert result["ok"] and result["skills_found"] == 3

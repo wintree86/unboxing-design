@@ -20,3 +20,5 @@ description: >
 선행 탐색 문서는 `docs/design-discovery/`, 시각 제작 문서는 `docs/design-harness/{run-id}/`, 디자인/이미지는 `designs/ui/{run-id}/`와 `designs/exports/design-harness/{run-id}/`다. 기본은 현재 프로젝트의 docs와 designs이며 design-kit.json으로 문서/코드 루트를 지정할 수 있다. `.pen`은 전용 도구로만 읽고 쓴다. 외부 자료는 실제로 관찰하고 출처를 기록하며 제품용 자산과 구분한다.
 
 특정 기획·아키텍처·와이어프레임 봇이나 오케스트레이터 설치를 요구하지 않는다. 기존 산출물을 소비하고, 없으면 현재 에이전트가 필요한 구조 요약을 작성한다. 새 채팅·추가 에이전트·외부 게시를 자동으로 실행하지 않는다.
+
+선택된 시안을 실제 앱으로 구현하는 요청은 [design-implementation](../design-implementation/SKILL.md)으로 넘긴다. 제작 단계의 구조 탐색 자유를 승인 시안 구현 단계의 임의 재구성 권한으로 확대하지 않는다.

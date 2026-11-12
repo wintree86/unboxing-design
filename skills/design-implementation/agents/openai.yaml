@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Implementation"
+  short_description: "승인 시안의 구성과 디테일을 코드로 옮기고 실제 화면의 일치를 검증"
+  default_prompt: "Use $design-implementation to implement the approved design and verify it against the running app."

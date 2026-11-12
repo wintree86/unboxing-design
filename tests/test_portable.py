@@ -30,12 +30,12 @@ def test_installed_pair_runs_after_source_checkout_is_removed(tmp_path, target, 
     outside = tmp_path / "unrelated working directory"
     outside.mkdir()
     receipt = invoke(checkout / "install.py", "--target", target, "--project", project, cwd=outside)
-    assert receipt["skills"] == 2 and receipt["files"] > 10
+    assert receipt["skills"] == 3 and receipt["files"] > 10
     skills = project / folder / "skills"
     script = skills / "design-harness/scripts/design.py"
     shutil.rmtree(checkout)
     doctor = invoke(script, "--project-root", project, "doctor", cwd=outside)
-    assert doctor["ok"] and doctor["skills_found"] == 2
+    assert doctor["ok"] and doctor["skills_found"] == 3
     assert Path(doctor["docs_root"]) == project
     assert not any(p.is_symlink() for p in skills.rglob("*"))
 
