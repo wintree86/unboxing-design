@@ -7,7 +7,8 @@ import sys
 
 import pytest
 
-from design_factory import build
+from design_factory import build, visual_review
+from design_kit.design_runs import DesignRun
 
 PACKAGE = Path(__file__).resolve().parents[1]
 
@@ -48,6 +49,7 @@ def test_installed_pair_runs_after_source_checkout_is_removed(tmp_path, target, 
                "docs/design-harness/test/brief.md")["phase"] == "draft"
     ctx.resolve("docs/design-harness/test/manifest.json").write_text(json.dumps(manifest))
     cli("refresh", "--run", "test", "--reason", "Synthetic installation fixture")
+    visual_review(DesignRun(ctx,"test"))
     measurement = cli("prepare", "--run", "test")
     assert measurement["ok"] and measurement["metrics"]["delivered_frames"] == 2
     board = cli("board", "--run", "test", "--output", "designs/board")

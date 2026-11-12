@@ -152,7 +152,7 @@ def validate_contract(manifest: dict, ctx: ProjectContext, *, stage="comparison"
 
     if not check(isinstance(manifest, dict), "Manifest must be an object"):
         return result()
-    check(type(manifest.get("schema_version")) is int and manifest["schema_version"] == 1, "schema_version must be 1")
+    check(type(manifest.get("schema_version")) is int and manifest["schema_version"] in (1, 2), "schema_version must be 1 or 2")
     check(isinstance(manifest.get("run_id"), str) and ID.fullmatch(manifest["run_id"]) is not None, "Invalid run_id")
     check(stage in ("comparison", "final"), "Invalid validation stage")
     check(manifest.get("scope") in ("ui", "non_ui"), "scope must be ui or non_ui")
@@ -165,6 +165,15 @@ def validate_contract(manifest: dict, ctx: ProjectContext, *, stage="comparison"
     if manifest.get("scope") == "non_ui":
         check(text(manifest.get("reason")), "non_ui requires a source-related reason")
         return result()
+    if manifest.get('schema_version') == 2:
+        review_paths = {f"docs/design-harness/{manifest.get('run_id')}/{name}" for name in ('comparison-review.json','review.json')}
+        check(not any(ref.get('path') in review_paths for ref in refs_in(manifest)), 'Review JSON must stay outside its own artifact fingerprint')
+        errors.extend(presentation_errors(manifest, ctx))
+        for reference in rows(manifest.get('references'), 'references'):
+            if not isinstance(reference, dict): continue
+            check(reference.get('role') in ('primary_layout', 'supporting_visual'), 'Reference needs an explicit usage role')
+            check(all(text(reference.get(k)) for k in ('scene', 'task', 'apply_to', 'exclude')), 'Reference needs scene/task/application boundaries')
+            if reference.get('preview') is not None: pin(reference['preview'], 'reference.preview')
     theme = manifest.get("theme")
     if check(isinstance(theme, dict), "theme must be an object"):
         check(text(theme.get("requested")) and text(theme.get("interpretation")), "Missing requested theme or interpretation")
@@ -325,3 +334,37 @@ def validate_contract(manifest: dict, ctx: ProjectContext, *, stage="comparison"
             metrics["expected_frames"] += len(expected_cells)
             metrics["delivered_frames"] += len(expected_cells & keys)
     return result()
+
+
+def presentation_errors(manifest, ctx):
+    """Bind presented current frames to registered candidate/version/source/preview."""
+    if manifest.get('scope') == 'non_ui': return []
+    entries = manifest.get('presentation')
+    if not isinstance(entries, list) or not entries or any(not isinstance(e,dict) for e in entries):
+        return ['Presentation registry is missing; drafts may be viewed but not selected']
+    errors, current, ids = [], set(), set()
+    candidates = manifest.get('candidates')
+    if not isinstance(candidates,list) or any(not isinstance(c,dict) or not isinstance(c.get('frames'),list) or
+        any(not isinstance(f,dict) or not text(f.get('id')) for f in c['frames']) for c in candidates):
+        return ['Presentation needs valid candidate frames']
+    expected = {(c.get('id'), f['id']): (c, f) for c in candidates for f in c['frames']}
+    for e in entries:
+        ident=e.get('id'); role=e.get('role')
+        if not text(ident) or ident in ids: errors.append('Presentation needs unique IDs')
+        ids.add(str(ident))
+        if role not in ('current','previous','reference','rejected'): errors.append('Unknown presentation role')
+        for field in ('source','preview'):
+            try:
+                if file_ref(ctx, e.get(field,{}).get('path')) != e.get(field): errors.append('Presentation file identity changed')
+            except (DesignError, OSError, AttributeError) as exc: errors.append(str(exc))
+        if not text(e.get('node_id')): errors.append('Presentation needs actual source frame node')
+        if role == 'current':
+            key=(e.get('candidate_id'),e.get('frame_id'))
+            if key not in expected: errors.append('Presentation refers to an unknown current frame');continue
+            c,f=expected[key]
+            if key in current: errors.append('Duplicate current presentation frame')
+            current.add(key)
+            if e.get('version') != c['version'] or any(e.get(k) != f.get(k) for k in ('node_id','source','preview')):
+                errors.append('Presentation candidate/frame/preview version mismatch')
+    if current != set(expected): errors.append('Current presentation does not cover registered frames')
+    return errors

@@ -44,10 +44,10 @@ def cli(argv=None):
     init.add_argument("--scope", choices=["ui", "non_ui"], default="ui")
     init.add_argument("--reason", default="")
     init.add_argument("--request-id")
-    for command in ("status", "refresh", "check", "prepare", "event", "gate", "board", "serve", "observe"):
+    for command in ("status", "refresh", "check", "prepare", "event", "gate", "board", "serve", "observe", "upgrade"):
         child = commands.add_parser(command)
         child.add_argument("--run", required=True)
-        if command == "refresh":
+        if command in ("refresh", "upgrade"):
             child.add_argument("--reason", required=True)
             child.add_argument("--automatic", action="store_true")
         if command in ("check", "prepare"):
@@ -85,7 +85,7 @@ def cli(argv=None):
         else:
             run = DesignRun(ctx, args.run)
             if args.command == "init":
-                manifest = {"schema_version": 1, "run_id": args.run, "scope": args.scope,
+                manifest = {"schema_version": 2, "run_id": args.run, "scope": args.scope,
                             "sources": [file_ref(ctx, p) for p in args.source], "brief": file_ref(ctx, args.brief),
                             "theme": {"requested": args.theme, "interpretation": "", "avoid": []},
                             "requirements": [], "screens": [], "viewports": [], "comparison": [], "references": [], "candidates": []}
@@ -97,8 +97,10 @@ def cli(argv=None):
                 atomic_json(safe_path(ctx, "docs/design-harness/active.json"), {"run_id": args.run})
             elif args.command == "status":
                 state = run.status()
-                output = {k: state.get(k) for k in ("run_id", "phase", "recorded_phase", "current_snapshot", "selected", "automatic_revisions", "manifest")}
+                output = {k: state.get(k) for k in ("run_id", "phase", "recorded_phase", "current_snapshot", "selected", "automatic_revisions", "manifest", "work_mode", "production_allowed", "production_allowed_by_candidate", "analysis_allowed", "expansion_allowed", "selection_usable", "eligible_candidate_ids", "readiness_errors", "feedback", "active_holds", "upgrade_required")}
                 output["event_count"] = len(state["events"])
+            elif args.command == "upgrade":
+                output = run.upgrade(args.reason)
             elif args.command == "refresh":
                 state = run.refresh(args.reason, automatic=args.automatic)
                 output = {k: state.get(k) for k in ("phase", "snapshot", "selected", "automatic_revisions")}

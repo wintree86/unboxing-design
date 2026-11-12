@@ -1,0 +1,18 @@
+{"schema_version":1,"cases":[
+{"id":"R01","expect":"missing visual review blocks selection, draft view stays available"},
+{"id":"R02","expect":"old artifact review blocks comparison"},
+{"id":"R03","expect":"untriaged feedback blocks affected candidate and preserves text"},
+{"id":"R04","expect":"post-final rejection blocks handoff, preserves decisions"},
+{"id":"R05","expect":"preference triage retains valid selection"},
+{"id":"R06","expect":"rejecting a does not delete selection b"},
+{"id":"R07","expect":"diagnosis persists through refresh and restart"},
+{"id":"R08","expect":"user resume removes only named hold, is not a selection"},
+{"id":"R09","expect":"B preference preserves version without invented fixed attributes"},
+{"id":"R10","expect":"unresolved relationship review cannot resolve spacing feedback"},
+{"id":"R11","expect":"unreviewed scene mismatch blocks; scoped supporting usage passes"},
+{"id":"R12","expect":"reviewed rework comparison blocks; explicit visual comparison passes"},
+{"id":"R13","expect":"presentation frame/preview mismatch blocks choice and is visible"},
+{"id":"R14","expect":"duplicate feedback is one event; old version is history only"},
+{"id":"R15","expect":"new relevant feedback invalidates earlier visual review"},
+{"id":"R16","expect":"revision choice uses normal direction event without feedback approval"}
+]}

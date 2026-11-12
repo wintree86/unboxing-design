@@ -18,7 +18,8 @@ function showScene(){
   document.getElementById("feedback-screen").value=current[0];
   for(const candidate of data.candidates){
     const article=el("article",undefined,"candidate");
-    article.append(el("h2",candidate.title),el("p",candidate.concept));
+    article.append(el("h2",`${candidate.title} · v${candidate.version} · 현재 등록본`),el("p",candidate.concept));
+    const issues=data.readiness_errors?.[candidate.id]||[];if(issues.length)article.append(el("p",`검토 필요: ${issues.join("; ")}`,"error"));
     const frame=candidate.frames.find(f=>JSON.stringify(f.cell)===JSON.stringify(current));
     if(frame){
       const scroll=el("div",undefined,"preview-scroll");scroll.tabIndex=0;scroll.setAttribute("aria-label",`${candidate.title} 미리보기 영역`);
@@ -49,7 +50,7 @@ for(const form of document.querySelectorAll('form[action="/event"]')){
     const values=Object.fromEntries(new FormData(form));
     const candidate=data.candidates.find(c=>c.id===values.candidate_id);
     pendingId ||= crypto.randomUUID();
-    const payload={...values,id:pendingId,version:candidate.version,actor:"user",authority:"Explicit export from local comparison board"};
+    const payload={...values,id:pendingId,version:candidate?.version??null,actor:"user",authority:"Explicit export from local comparison board"};
     const status=form.id==="feedback"?document.getElementById("feedback-status"):document.getElementById("run-status");
     if(!data.online){delete payload.csrf;exportEvent(payload);status.textContent="기록 파일을 다운로드했습니다. 하네스에 가져오면 저장됩니다.";return;}
     const button=form.querySelector('button[type="submit"]');button.disabled=true;
@@ -58,7 +59,7 @@ for(const form of document.querySelectorAll('form[action="/event"]')){
       const result=await response.json();if(!response.ok)throw new Error(result.error||"저장하지 못했습니다.");
       status.classList.remove("error");status.textContent=form.id==="feedback"?"피드백을 저장했습니다.":values.kind==="final"?"전체 디자인의 최종 결정을 저장했습니다.":"방향 선택을 저장했습니다. 이 방향으로 전체 화면을 확장합니다.";
       try{localStorage.removeItem(draftKey);}catch{}
-      if(form.id==="feedback"){textarea.value="";pendingId=null;}else{form.hidden=true;}
+      if(form.id==="feedback"){textarea.value="";pendingId=null;location.reload();}else{form.hidden=true;}
     }catch(error){status.classList.add("error");status.textContent=`저장되지 않았습니다. ${error.message} 내용을 유지했으니 연결 확인 후 다시 제출해 주세요.`;}
     finally{button.disabled=false;}
   });

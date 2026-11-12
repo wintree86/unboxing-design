@@ -41,7 +41,7 @@ def build(tmp_path):
     brief = save("docs/design-harness/test/brief.md", "합성 렌더 fixture. 미적 품질/실제 폰트 테스트가 아님.")
     content = save("docs/design-harness/test/content.json", {"title":"달빛 가게", "report":"입고 제보"})
     observation_ref = save("docs/design-harness/test/ref.md", "Known synthetic source observation; composition and light analyzed.")
-    manifest = {"schema_version":1,"run_id":"test","scope":"ui","sources":sources,"brief":brief,
+    manifest = {"schema_version":2,"run_id":"test","scope":"ui","sources":sources,"brief":brief,
                 "theme":{"requested":"몽환적","interpretation":"고요한 밤의 가게","avoid":[]}, "content":content,
                 "requirements":[{"id":"FR-1","screen_ids":["detail"]}],
                 "screens":[{"id":"detail","states":["default"],"viewports":["mobile"],"content":["title","report"],
@@ -77,6 +77,11 @@ def build(tmp_path):
             "node_id":f"{cid}-root","preview":preview,"readback":readback,"font_observation":fonts,
             "content_nodes":{"title":f"{cid}-title","report":f"{cid}-label"}, "action_nodes":{"report":f"{cid}-button"},
             "signature_nodes":{"quiet":f"{cid}-title"},"allowed_overlaps":[]}]})
+    manifest['presentation'] = [dict(id=f['id'], role='current', candidate_id=c['id'], version=c['version'],
+        frame_id=f['id'], **{k:f[k] for k in ('node_id','source','preview')}) for c in manifest['candidates'] for f in c['frames']]
+    for r in manifest['references']:
+        r.update(role='supporting_visual', scene='synthetic detail', task='report availability',
+                 apply_to='title hierarchy', exclude='onboarding structure')
     return ctx,manifest
 
 
@@ -93,6 +98,7 @@ def start(ctx,manifest):
     run=DesignRun(ctx,"test")
     run.initialize(manifest)
     run.refresh("Initial source review and synthetic fixture preparation")
+    visual_review(run)
     assert run.prepare()["ok"]
     return run
 
@@ -105,6 +111,29 @@ def event(run,kind="direction",**overrides):
 def review(run):
     evidence=run.directory/"independent.md"
     evidence.write_text("Synthetic independent review fixture; not a real independent review.")
-    atomic_json(run.directory/"review.json",{"snapshot":run.status()["current_snapshot"],"candidate_id":"a",
+    atomic_json(run.directory/"review.json",{"snapshot":run.status()["current_snapshot"],"candidate_id":"a","version":run.manifest()["candidates"][0]["version"],
         "reviewer_id":"reviewer","producer_id":"producer","independent":True,"verdict":"pass","unresolved":[],
-        "evidence":file_ref(run.ctx,f"{run.rel}/independent.md")})
+        "evidence":file_ref(run.ctx,f"{run.rel}/independent.md"), **review_details(run,'a')})
+
+
+def review_details(run,cid,reference_verdict='acceptable'):
+    feedback = [f for f in run.status()['feedback'] if f['active'] and f['candidate_id'] in (None,cid)]
+    return {'feedback_events':[eid for f in feedback if f['classification']!='preference' for eid in f['updates']],
+            'feedback_ids':[f['id'] for f in feedback if f['classification']!='preference'],
+            'observations':[{'region':'book metadata','nodes':[cid+'-title'],
+                             'finding':'Synthetic relationship reviewed; not an aesthetic judgment'}],
+            'regressions':'No known synthetic regression; real appearance is unverified',
+            'reference_usage':[{'reference_id':'ref-1','verdict':reference_verdict,'source_region':'title area',
+              'task_fit':'Supporting hierarchy only; task mismatch excluded', 'retained':'grouping',
+              'changed':'product title','study_evidence':file_ref(run.ctx,run.rel+'/ref.md'), 'product_nodes':[cid+'-title']}]}
+
+
+def visual_review(run, reference_verdict='acceptable', distinction_verdict='acceptable', purpose='both'):
+    evidence=run.directory/'visual.md';evidence.write_text('Synthetic self review; not a real visual approval.')
+    record={'snapshot':run.status()['current_snapshot'],'purpose':purpose,
+            'distinction':{'verdict':distinction_verdict,'observation':'Known fixture comparison: geometry is equal, visual scope stated'},
+            'candidates':[{'candidate_id':c['id'],'version':c['version'],'verdict':'pass','unresolved':[],
+                          'reviewer_id':'producer','producer_id':'producer','independent':False,
+                          'evidence':file_ref(run.ctx,run.rel+'/visual.md'),
+                          **review_details(run,c['id'],reference_verdict)} for c in run.manifest()['candidates']]}
+    atomic_json(run.directory/'comparison-review.json',record)
