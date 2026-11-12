@@ -12,8 +12,8 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "skills/design-harness/scripts"))
 from design_kit import __version__
 
-FILES = ("README.md", "AGENTS.md", ".gitignore", "pytest.ini", "design.py", "install.py", "build_release.py")
-DIRECTORIES = ("skills", "tests", "examples")
+FILES = ("README.md", "README.ko.md", "LICENSE", "AGENTS.md", ".gitignore", "pytest.ini", "design.py", "install.py", "build_release.py")
+DIRECTORIES = ("skills", "tests", "examples", "docs")
 
 
 def build(output):
